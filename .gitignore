@@ -1,0 +1,17 @@
+# Virtual environment - never commit this
+venv/
+
+# Dataset folders - too large for Git, and reproducible from source
+data/
+data_histopathology/
+
+# Trained model files - can be large, and reproducible by re-running training
+*.pth
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# OS-specific files
+.DS_Store
+Thumbs.db
