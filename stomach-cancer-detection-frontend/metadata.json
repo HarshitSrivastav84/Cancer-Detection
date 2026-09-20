@@ -1,0 +1,6 @@
+{
+  "name": "Stomach Cancer Detection",
+  "description": "Histopathology analysis tool for automated gastric cancer screening and diagnostic assessment with real-time confidence metrics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
