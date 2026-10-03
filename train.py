@@ -12,7 +12,6 @@ import pandas as pd
 from dataset import GastricDataset, train_transform, eval_transform
 from model import build_model
 
-# CONFIG
 CSV_PATH = "dataset_labels.csv"
 BATCH_SIZE = 32
 NUM_EPOCHS = 10
@@ -21,14 +20,13 @@ DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 print(f"Using device: {DEVICE}")
 
-# LOAD DATASETS
 train_dataset = GastricDataset(CSV_PATH, split="train", transform=train_transform)
 val_dataset = GastricDataset(CSV_PATH, split="val", transform=eval_transform)
 
 train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
 val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
 
-# HANDLE CLASS IMBALANCE
+# Handle class imbalance
 full_df = pd.read_csv(CSV_PATH)
 train_labels = full_df[full_df["split"] == "train"]["label"].map(
     {"non_cancer": 0, "cancer": 1}
@@ -42,19 +40,17 @@ class_weights = compute_class_weight(
 class_weights_tensor = torch.tensor(class_weights, dtype=torch.float32).to(DEVICE)
 print(f"Class weights (non_cancer, cancer): {class_weights}")
 
-# ---- BUILD MODEL ----
+# Build model
 model = build_model(num_classes=2, freeze_backbone=True)
 model = model.to(DEVICE)
 
-# ---- LOSS AND OPTIMIZER ----
 criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
-optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)  # Adam
 
-# ---- TRAINING LOOP ----
 best_val_acc = 0.0
 
 for epoch in range(NUM_EPOCHS):
-    # --- Training phase ---
+    # Training phase
     model.train()
     running_loss = 0.0
 
@@ -64,7 +60,7 @@ for epoch in range(NUM_EPOCHS):
         optimizer.zero_grad()
         outputs = model(images)
         loss = criterion(outputs, labels)
-        loss.backward()
+        loss.backward() # Backpropagation
         optimizer.step()
 
         running_loss += loss.item()
@@ -74,7 +70,7 @@ for epoch in range(NUM_EPOCHS):
 
     avg_train_loss = running_loss / len(train_loader)
 
-    # --- Validation phase ---
+    # Validation phase
     model.eval()
     correct, total = 0, 0
     val_loss = 0.0
@@ -95,7 +91,7 @@ for epoch in range(NUM_EPOCHS):
     print(f"\n=== Epoch {epoch+1}/{NUM_EPOCHS} Summary ===")
     print(f"Train Loss: {avg_train_loss:.4f} | Val Loss: {avg_val_loss:.4f} | Val Accuracy: {val_acc:.2f}%\n")
 
-    # Save the best model (based on validation accuracy)
+    # Save the best model
     if val_acc > best_val_acc:
         best_val_acc = val_acc
         torch.save(model.state_dict(), "gastric_cancer_model.pth")

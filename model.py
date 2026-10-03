@@ -1,6 +1,6 @@
 """
-CNN model definition for gastric cancer detection.
-Uses a pretrained EfficientNet-B0.
+CNN model cancer detection.
+Using EfficientNet-B0.
 """
 
 import torch
@@ -23,12 +23,14 @@ def build_model(num_classes=2, freeze_backbone=True):
     return model
 
 
+# Testing on fake image
 if __name__ == "__main__":
-    # Quick test: build the model and check it runs on a fake image
     model = build_model()
     print(model.classifier)
 
-    dummy_input = torch.randn(1, 3, 224, 224)  # batch of 1 fake image
+    dummy_input = torch.randn(1, 3, 224, 224)
+
     output = model(dummy_input)
-    print(f"\nOutput shape: {output.shape}")  # should be [1, 2]
+    print(f"\nOutput shape: {output.shape}")
+    
     print("Model built and tested successfully!")
