@@ -1,5 +1,11 @@
 """
-Training script for gastric cancer detection model.
+Phase 2 training: Full fine-tuning.
+Unfreezes the entire backbone and continues training with a much smaller
+learning rate, starting from your already-trained model.
+
+Run this AFTER your original train.py has already produced
+gastric_cancer_model.pth - this script loads that model and improves it
+further, rather than starting from scratch.
 """
 
 import torch
@@ -12,21 +18,24 @@ import pandas as pd
 from dataset import GastricDataset, train_transform, eval_transform
 from model import build_model
 
+# ---- CONFIG ----
 CSV_PATH = "dataset_labels.csv"
+PREVIOUS_MODEL_PATH = "gastric_cancer_model.pth"  # your already-trained model
 BATCH_SIZE = 32
-NUM_EPOCHS = 20
-LEARNING_RATE = 0.0001
+NUM_EPOCHS = 10
+LEARNING_RATE = 0.00001  # MUCH smaller than before - avoids destroying pretrained knowledge
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 print(f"Using device: {DEVICE}")
 
+# ---- LOAD DATASETS (same as before) ----
 train_dataset = GastricDataset(CSV_PATH, split="train", transform=train_transform)
 val_dataset = GastricDataset(CSV_PATH, split="val", transform=eval_transform)
 
 train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
 val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
 
-# Handle class imbalance
+# ---- CLASS WEIGHTS (same as before) ----
 full_df = pd.read_csv(CSV_PATH)
 train_labels = full_df[full_df["split"] == "train"]["label"].map(
     {"non_cancer": 0, "cancer": 1}
@@ -40,17 +49,21 @@ class_weights = compute_class_weight(
 class_weights_tensor = torch.tensor(class_weights, dtype=torch.float32).to(DEVICE)
 print(f"Class weights (non_cancer, cancer): {class_weights}")
 
-# Build model
-model = build_model(num_classes=2, freeze_backbone=True)
+# ---- BUILD MODEL WITH UNFROZEN BACKBONE, LOAD YOUR PREVIOUS WEIGHTS ----
+model = build_model(num_classes=2, freeze_backbone=False)  # KEY CHANGE: unfrozen
+model.load_state_dict(torch.load(PREVIOUS_MODEL_PATH, map_location=DEVICE))
 model = model.to(DEVICE)
 
-criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
-optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)  # Adam
+print("Loaded previous model weights. Backbone is now UNFROZEN for fine-tuning.")
 
+# ---- LOSS AND OPTIMIZER (lower learning rate this time) ----
+criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
+optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
+
+# ---- TRAINING LOOP (same structure as before) ----
 best_val_acc = 0.0
 
 for epoch in range(NUM_EPOCHS):
-    # Training phase
     model.train()
     running_loss = 0.0
 
@@ -60,7 +73,7 @@ for epoch in range(NUM_EPOCHS):
         optimizer.zero_grad()
         outputs = model(images)
         loss = criterion(outputs, labels)
-        loss.backward() # Backpropagation
+        loss.backward()
         optimizer.step()
 
         running_loss += loss.item()
@@ -70,7 +83,6 @@ for epoch in range(NUM_EPOCHS):
 
     avg_train_loss = running_loss / len(train_loader)
 
-    # Validation phase
     model.eval()
     correct, total = 0, 0
     val_loss = 0.0
@@ -91,11 +103,10 @@ for epoch in range(NUM_EPOCHS):
     print(f"\n=== Epoch {epoch+1}/{NUM_EPOCHS} Summary ===")
     print(f"Train Loss: {avg_train_loss:.4f} | Val Loss: {avg_val_loss:.4f} | Val Accuracy: {val_acc:.2f}%\n")
 
-    # Save the best model
     if val_acc > best_val_acc:
         best_val_acc = val_acc
-        torch.save(model.state_dict(), "gastric_cancer_model.pth")
-        print(f"New best model saved! (Val Accuracy: {val_acc:.2f}%)\n")
+        torch.save(model.state_dict(), "gastric_cancer_model_finetuned.pth")
+        print(f"New best fine-tuned model saved! (Val Accuracy: {val_acc:.2f}%)\n")
 
-print(f"\nTraining complete. Best validation accuracy: {best_val_acc:.2f}%")
-print("Model saved as gastric_cancer_model.pth")
+print(f"\nFine-tuning complete. Best validation accuracy: {best_val_acc:.2f}%")
+print("Model saved as gastric_cancer_model_finetuned.pth")
