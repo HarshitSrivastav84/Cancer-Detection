@@ -1,11 +1,6 @@
 """
-Phase 2 training: Full fine-tuning.
-Unfreezes the entire backbone and continues training with a much smaller
-learning rate, starting from your already-trained model.
-
-Run this AFTER your original train.py has already produced
-gastric_cancer_model.pth - this script loads that model and improves it
-further, rather than starting from scratch.
+Full fine-tuning.
+Unfreezes, smaller learning rate
 """
 
 import torch
@@ -18,24 +13,22 @@ import pandas as pd
 from dataset import GastricDataset, train_transform, eval_transform
 from model import build_model
 
-# ---- CONFIG ----
 CSV_PATH = "dataset_labels.csv"
-PREVIOUS_MODEL_PATH = "gastric_cancer_model.pth"  # your already-trained model
+PREVIOUS_MODEL_PATH = "gastric_cancer_model.pth"  # model
 BATCH_SIZE = 32
 NUM_EPOCHS = 10
-LEARNING_RATE = 0.00001  # MUCH smaller than before - avoids destroying pretrained knowledge
+LEARNING_RATE = 0.00001
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 print(f"Using device: {DEVICE}")
 
-# ---- LOAD DATASETS (same as before) ----
 train_dataset = GastricDataset(CSV_PATH, split="train", transform=train_transform)
 val_dataset = GastricDataset(CSV_PATH, split="val", transform=eval_transform)
 
 train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
 val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=2)
 
-# ---- CLASS WEIGHTS (same as before) ----
+# CLASS WEIGHTS
 full_df = pd.read_csv(CSV_PATH)
 train_labels = full_df[full_df["split"] == "train"]["label"].map(
     {"non_cancer": 0, "cancer": 1}
@@ -49,18 +42,18 @@ class_weights = compute_class_weight(
 class_weights_tensor = torch.tensor(class_weights, dtype=torch.float32).to(DEVICE)
 print(f"Class weights (non_cancer, cancer): {class_weights}")
 
-# ---- BUILD MODEL WITH UNFROZEN BACKBONE, LOAD YOUR PREVIOUS WEIGHTS ----
-model = build_model(num_classes=2, freeze_backbone=False)  # KEY CHANGE: unfrozen
+# BUILD MODEL WITH UNFROZEN BACKBONE
+model = build_model(num_classes=2, freeze_backbone=False)
 model.load_state_dict(torch.load(PREVIOUS_MODEL_PATH, map_location=DEVICE))
 model = model.to(DEVICE)
 
 print("Loaded previous model weights. Backbone is now UNFROZEN for fine-tuning.")
 
-# ---- LOSS AND OPTIMIZER (lower learning rate this time) ----
+# LOSS AND OPTIMIZER
 criterion = nn.CrossEntropyLoss(weight=class_weights_tensor)
 optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
-# ---- TRAINING LOOP (same structure as before) ----
+# TRAINING LOOP
 best_val_acc = 0.0
 
 for epoch in range(NUM_EPOCHS):

@@ -1,5 +1,4 @@
 """
-CNN model cancer detection.
 Using EfficientNet-B0.
 """
 
@@ -15,8 +14,6 @@ def build_model(num_classes=2, freeze_backbone=True):
         for param in model.features.parameters():
             param.requires_grad = False
 
-    # Replace the final classification layer
-    # EfficientNet-B0's classifier expects 1280 input features
     in_features = model.classifier[1].in_features
     model.classifier[1] = nn.Linear(in_features, num_classes)
 

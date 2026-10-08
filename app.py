@@ -1,12 +1,3 @@
-"""
-Flask backend for the Gastric Cancer Detection tool.
-
-Serves a single /predict endpoint that accepts an uploaded image,
-runs it through the trained CNN, and returns a prediction with
-plain-language explanation - written to be safely understood by
-both doctors and patients, since this app has no login/role split.
-"""
-
 import torch
 from flask import Flask, request, jsonify
 from PIL import Image
@@ -15,7 +6,7 @@ import io
 from model import build_model
 from dataset import eval_transform, LABEL_TO_IDX
 
-# ---- CONFIG ----
+
 MODEL_PATH = "gastric_cancer_model.pth"
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -23,7 +14,6 @@ IDX_TO_LABEL = {v: k for k, v in LABEL_TO_IDX.items()}  # reverse the mapping
 
 app = Flask(__name__)
 
-# ---- LOAD MODEL ONCE AT STARTUP (not per-request) ----
 print("Loading model...")
 model = build_model(num_classes=2, freeze_backbone=True)
 model.load_state_dict(torch.load(MODEL_PATH, map_location=DEVICE))

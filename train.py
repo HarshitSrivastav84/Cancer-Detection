@@ -1,7 +1,3 @@
-"""
-Training script for gastric cancer detection model.
-"""
-
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
