@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HistoScreen – Gastric tissue analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <div class="logo" aria-hidden="true"></div>
+  <h1>Stomach Cancer Detection</h1>
+  <p>AI-assisted screening of H&amp;E stomach tissue. Research prototype, not a diagnosis.</p>
+</header>
+
+<div class="wrap">
+  <h2 class="intro">Look at the tissue. Get a second opinion in seconds.</h2>
+  <p class="sub">Upload a histopathology patch and the model estimates how likely it contains tumor tissue. A pathologist should always review the result.</p>
+
+  <div class="grid">
+    <section class="panel scope" aria-label="Image viewer">
+      <div class="lens-wrap">
+        <div class="lens" id="lens" tabindex="0" role="button" aria-label="Choose or drop a tissue image">
+          <div class="hint"><b>Drop a tissue image</b>or click to browse (JPG, PNG, TIFF)</div>
+          <div class="scan"></div>
+        </div>
+      </div>
+      <input type="file" id="file" accept="image/*">
+      <div class="actions">
+        <button class="primary" id="go" disabled>Analyze image</button>
+        <button class="ghost" id="clear" disabled>Clear</button>
+      </div>
+      <div class="fname" id="fname"></div>
+    </section>
+
+    <section class="panel results" aria-live="polite">
+      <div class="empty" id="empty">
+        <h2>No result yet</h2>
+        <p>Your analysis will appear here.</p>
+        <ol class="steps">
+          <li>Add an H&amp;E-stained image to the viewer.</li>
+          <li>Select Analyze image.</li>
+          <li>Review the tumor probability with a pathologist.</li>
+        </ol>
+      </div>
+      <div id="out">
+        <div style="text-align:center"><span class="band" id="band"></span></div>
+        <div class="gauge">
+          <svg viewBox="0 0 200 110" aria-hidden="true">
+            <path d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="#eee6f0" stroke-width="16" stroke-linecap="round" pathLength="100"/>
+            <path id="arc" d="M20 100 A80 80 0 0 1 180 100" fill="none" stroke="var(--low)" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="0 100"/>
+          </svg>
+          <div class="num"><span id="pct">0%</span><small>tumor probability</small></div>
+        </div>
+        <h2 class="title" id="vTitle"></h2>
+        <p class="msg" id="vMsg"></p>
+        <div class="stats">
+          <div class="stat"><span>Model prediction</span><b id="sPred"></b></div>
+          <div class="stat"><span>Model confidence</span><b id="sConf"></b></div>
+        </div>
+        <div class="actions"><button class="primary dl" id="dl">Download PDF report</button><button class="ghost dark" onclick="window.print()">Print</button></div>
+        <p class="note" id="disc"></p>
+      </div>
+      <div class="err" id="err" role="alert"></div>
+    </section>
+  </div>
+
+  <section class="hist" id="hist" hidden>
+    <h3>This session</h3>
+    <ul id="list"></ul>
+  </section>
+
+  <div class="warn"><b>Important:</b> The model was trained on one public dataset of 224×224 patches and flags some healthy tissue as tumor. It does not replace a pathologist and must not be used for clinical decisions.</div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
