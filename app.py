@@ -1,14 +1,3 @@
-"""
-Flask backend + web page for the Gastric Tissue Screening tool.
-
-Run:   python app.py
-Open:  http://127.0.0.1:5000
-
-The decision threshold defaults to 0.50 (the setting with a measured
-test-set sensitivity of about 86%). To try another value without editing
-the file, in PowerShell:   $env:THRESHOLD="0.65"; python app.py
-"""
-
 import io
 import os
 

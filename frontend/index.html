@@ -3,23 +3,48 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>HistoScreen – Gastric tissue analysis</title>
+<title>MediPredict – Gastric tissue analysis</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="patient.css">
 </head>
 <body>
 <header>
   <div class="logo" aria-hidden="true"></div>
-  <h1>Stomach Cancer Detection</h1>
+  <h1>MediPredict</h1>
   <p>AI-assisted screening of H&amp;E stomach tissue. Research prototype, not a diagnosis.</p>
 </header>
 
 <div class="wrap">
   <h2 class="intro">Look at the tissue. Get a second opinion in seconds.</h2>
   <p class="sub">Upload a histopathology patch and the model estimates how likely it contains tumor tissue. A pathologist should always review the result.</p>
+
+  <section class="patient" aria-label="Patient details">
+    <div class="patient-head">
+      <h3>Patient details</h3>
+      <small>Fields marked * are required. Details stay in this browser and are not sent to the server.</small>
+    </div>
+    <div class="pgrid">
+      <div class="field"><label for="pname">Full name <i>*</i></label><input id="pname" autocomplete="off"><div class="fe">Enter the patient's name.</div></div>
+      <div class="field"><label for="pid">Patient ID / MRN <i>*</i></label><input id="pid" autocomplete="off"><div class="fe">Enter the patient ID.</div></div>
+      <div class="field"><label for="page">Age (years) <i>*</i></label><input id="page" type="number" min="0" max="120" inputmode="numeric"><div class="fe">Enter an age from 0 to 120.</div></div>
+      <div class="field"><label for="psex">Gender <i>*</i></label>
+        <select id="psex"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select><div class="fe">Select a gender.</div></div>
+      <div class="field"><label for="pphone">Phone number <i>*</i></label><input id="pphone" type="tel" inputmode="tel" placeholder="10-digit number"><div class="fe">Enter a valid phone number.</div></div>
+      <div class="field"><label for="pdoc">Referring doctor</label><input id="pdoc" autocomplete="off"></div>
+      <div class="field"><label for="psite">Specimen site</label>
+        <select id="psite"><option value="">Not specified</option><option>Cardia</option><option>Fundus</option><option>Body</option><option>Antrum</option><option>Pylorus</option><option>Other</option></select></div>
+      <div class="field"><label for="pdate">Collection date</label><input id="pdate" type="date"></div>
+    </div>
+    <label class="consent"><input type="checkbox" id="consent"><span>The patient has consented to AI-assisted analysis of this sample. <i style="color:var(--high);font-style:normal">*</i></span></label>
+    <div class="pfoot">
+      <p class="hintline">Analyze image unlocks once an image is added and all required fields are complete.</p>
+      <button type="button" class="linkbtn" id="newpat">Clear patient details</button>
+    </div>
+  </section>
 
   <div class="grid">
     <section class="panel scope" aria-label="Image viewer">
@@ -42,8 +67,8 @@
         <h2>No result yet</h2>
         <p>Your analysis will appear here.</p>
         <ol class="steps">
-          <li>Add an H&amp;E-stained image to the viewer.</li>
-          <li>Select Analyze image.</li>
+          <li>Fill in the patient details.</li>
+          <li>Add an H&amp;E-stained image to the viewer and select Analyze image.</li>
           <li>Review the tumor probability with a pathologist.</li>
         </ol>
       </div>
